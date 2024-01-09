@@ -37,6 +37,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.cupcake.data.DataSource
+import com.example.cupcake.ui.OrderSummaryScreen
 import com.example.cupcake.ui.OrderViewModel
 import com.example.cupcake.ui.SelectOptionScreen
 import com.example.cupcake.ui.StartOrderScreen
@@ -96,18 +97,31 @@ fun CupcakeApp(
         NavHost(navController = navController, startDestination = CupcakeScreen.Start.name,
             modifier = Modifier.padding(innerPadding)){
             composable(route = CupcakeScreen.Start.name){
-                StartOrderScreen(quantityOptions = DataSource.quantityOptions)
+                StartOrderScreen(
+                    quantityOptions = DataSource.quantityOptions,
+                    onNextButtonClicked = {
+                        viewModel.setQuantity(it)
+                        navController.navigate(CupcakeScreen.Flavor.name)})
             }
             composable(route = CupcakeScreen.Flavor.name){
                 val context = LocalContext.current
                 SelectOptionScreen(subtotal = uiState.price,
+                    onNextButtonClicked = { navController.navigate(CupcakeScreen.Pickup.name) },
+                    onCancelButtonClicked = {},
                     options = DataSource.flavors.map { id -> context.resources.getString(id) },
                     onSelectionChanged = {viewModel.setFlavor(it)})
             }
             composable(route = CupcakeScreen.Pickup.name){
                 SelectOptionScreen(subtotal = uiState.price,
                     options = uiState.pickupOptions,
+                    onNextButtonClicked = {navController.navigate(CupcakeScreen.Summary.name)},
+                    onCancelButtonClicked = {},
                     onSelectionChanged = {viewModel.setDate(it)})
+            }
+            composable(route = CupcakeScreen.Summary.name){
+                OrderSummaryScreen(orderUiState = uiState,
+                    onCancelButtonClicked = {},
+                    onSendButtonClicked = {subject:String, summary:String -> })
             }
         }
 
